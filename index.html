@@ -260,6 +260,11 @@
 .ball,.drop-preview,.next-ball{border:0!important;background:none!important;box-shadow:none!important}
 .ball::after,.drop-preview::after,.next-ball::after{content:none!important;display:none!important}
 .drop-preview{transform:translateX(-50%)!important}
+
+.ball,.drop-preview,.next-ball{border:0!important;background:none!important;box-shadow:none!important;filter:none!important}
+.ball::before,.drop-preview::before,.next-ball::before{background:var(--marble) center / contain no-repeat!important;transform:none!important;filter:none!important;opacity:1!important;box-shadow:none!important}
+.ball::after,.drop-preview::after,.next-ball::after{display:none!important;content:none!important}
+.ball .marble-letter,.drop-preview .marble-letter,.next-ball .marble-letter{display:none!important}
 </style></head><body><div class="app">
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
