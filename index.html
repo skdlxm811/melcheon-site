@@ -219,6 +219,30 @@
 .ball[data-level="7"],.drop-preview[data-level="7"],.next-ball[data-level="7"]{--ink:#923829}
 .ball[data-level="8"],.drop-preview[data-level="8"],.next-ball[data-level="8"]{--ink:#365b36}
 .ball[data-level="9"],.drop-preview[data-level="9"],.next-ball[data-level="9"]{--ink:#7e4d0c}
+
+/* V15 bright glass: freshly drawn transparent orbs, legible ink, no outline */
+.ball,.drop-preview,.next-ball{background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+.ball::before,.drop-preview::before,.next-ball::before{
+ background:var(--marble) center/100% 100% no-repeat!important;
+ filter:drop-shadow(0 3px 3px #122c4c38)!important;box-shadow:none!important;
+ border:0!important;opacity:1!important
+}
+.ball::after,.drop-preview::after,.next-ball::after{display:none!important;content:none!important}
+.ball .marble-letter,.drop-preview .marble-letter,.next-ball .marble-letter{
+ color:var(--ink)!important;-webkit-text-stroke:.15px var(--ink)!important;
+ text-shadow:0 1px 1px #ffffffee!important;filter:none!important;
+ opacity:1!important;transform:none!important;z-index:5!important
+}
+.ball[data-level="0"],.drop-preview[data-level="0"],.next-ball[data-level="0"]{--ink:#164d6b}
+.ball[data-level="1"],.drop-preview[data-level="1"],.next-ball[data-level="1"]{--ink:#174a91}
+.ball[data-level="2"],.drop-preview[data-level="2"],.next-ball[data-level="2"]{--ink:#93375c}
+.ball[data-level="3"],.drop-preview[data-level="3"],.next-ball[data-level="3"]{--ink:#633c9a}
+.ball[data-level="4"],.drop-preview[data-level="4"],.next-ball[data-level="4"]{--ink:#875413}
+.ball[data-level="5"],.drop-preview[data-level="5"],.next-ball[data-level="5"]{--ink:#126e69}
+.ball[data-level="6"],.drop-preview[data-level="6"],.next-ball[data-level="6"]{--ink:#65429c}
+.ball[data-level="7"],.drop-preview[data-level="7"],.next-ball[data-level="7"]{--ink:#9a3c38}
+.ball[data-level="8"],.drop-preview[data-level="8"],.next-ball[data-level="8"]{--ink:#47702c}
+.ball[data-level="9"],.drop-preview[data-level="9"],.next-ball[data-level="9"]{--ink:#8b5814}
 </style></head><body><div class="app">
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
