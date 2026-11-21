@@ -309,7 +309,7 @@
 <script defer>
 'use strict';
 // Replace with your deployed Cloudflare Worker URL. No password is stored in this file.
-const RANKING_API = ''; 
+const RANKING_API = 'https://melcheon-ranking.leedh811.workers.dev'; 
 let gameActive=false, gameScore=0, gameNick='', nextLevel=0, pieces=[], gameTimer=null, lastDrop=0;
 const board=document.getElementById('gameBoard'), sizes=[17.955,23.625,31.185,40.635,51.975,65.205,80.325,97.335,115.29,136.08], emojis=['멸','천','문','파','흥','해','라','파','이','팅'];
 const randLevel=()=>Math.floor(Math.random()*3);let aimX=NaN;const preview=document.getElementById('dropPreview'),guide=document.getElementById('dropGuide');
@@ -407,12 +407,25 @@ function fitStage(){const available=stage.parentElement.clientWidth;stage.style.
 window.addEventListener('resize',fitStage);fitStage();
 async function api(path,opts={}){if(!RANKING_API)throw Error('공용 랭킹 서버가 아직 연결되지 않았습니다. README의 서버 설정을 완료하세요.');const res=await fetch(RANKING_API.replace(/\/$/,'')+path,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw Error(data.error||'서버 요청 실패');return data}
 async function endGame(){if(!gameActive)return;gameActive=false;clearInterval(gameTimer);const score=gameScore;const best=Math.max(score,Number(document.getElementById('gameBest').textContent)||0);document.getElementById('gameBest').textContent=best;localStorage.setItem('melcheon-best-'+gameNick,String(best));try{await api('/score',{method:'POST',body:JSON.stringify({nickname:gameNick,score})});await loadRanking();alert('점수가 랭킹에 저장되었습니다.')}catch(e){alert('게임 종료. '+e.message)}}
-async function loadRanking(){const list=document.getElementById('rankingList'),status=document.getElementById('rankStatus');list.replaceChildren();try{const data=await api('/ranking');status.textContent='최고 점수 순 · '+data.length+'/50명';data.forEach((x,i)=>{const item=document.createElement('div');item.className='item';const rank=document.createElement('div');rank.className='avatar';rank.textContent=i+1;const name=document.createElement('strong');name.textContent=x.nickname;const score=document.createElement('span');score.className='badge';score.textContent=Number(x.score).toLocaleString()+'점';item.append(rank,name,score);list.append(item)});if(!data.length)list.textContent='아직 등록된 기록이 없습니다.'}catch(e){status.textContent=e.message}}
+async function loadRanking(){const list=document.getElementById('rankingList'),status=document.getElementById('rankStatus');list.replaceChildren();try{const data=await api('/ranking');const entries=Array.isArray(data)?data:(data.rankings||[]);status.textContent='최고 점수 순 · '+entries.length+'/50명';entries.forEach((x,i)=>{const item=document.createElement('div');item.className='item';const rank=document.createElement('div');rank.className='avatar';rank.textContent=i+1;const name=document.createElement('strong');name.textContent=x.nickname;const score=document.createElement('span');score.className='badge';score.textContent=Number(x.score).toLocaleString()+'점';item.append(rank,name,score);list.append(item)});if(!entries.length)list.textContent='아직 등록된 기록이 없습니다.'}catch(e){status.textContent=e.message}}
 function openResetDialog(){document.getElementById('resetOverlay').hidden=false;document.getElementById('resetOverlay').style.setProperty('display','grid','important');document.getElementById('resetOverlay').classList.remove('hidden');document.getElementById('resetStepPassword').classList.remove('hidden');document.getElementById('resetStepConfirm').classList.add('hidden');document.getElementById('resetPassword').value='';document.getElementById('resetError').textContent='';document.getElementById('resetPassword').focus()}
-function closeResetDialog(){document.getElementById('resetOverlay').classList.add('hidden');document.getElementById('resetOverlay').hidden=true;document.getElementById('resetOverlay').style.setProperty('display','none','important');document.getElementById('resetPassword').value='';resetToken=''}
-let resetToken='';
-async function verifyResetPassword(){const password=document.getElementById('resetPassword').value;const error=document.getElementById('resetError');error.textContent='';try{const data=await api('/reset/verify',{method:'POST',body:JSON.stringify({password})});resetToken=data.token;document.getElementById('resetPassword').value='';document.getElementById('resetStepPassword').classList.add('hidden');document.getElementById('resetStepConfirm').classList.remove('hidden')}catch(e){error.textContent=e.message}}
-async function confirmRankingReset(){try{await api('/reset/confirm',{method:'POST',body:JSON.stringify({token:resetToken})});closeResetDialog();await loadRanking();alert('전체 랭킹이 초기화되었습니다.')}catch(e){alert(e.message);closeResetDialog()}}
+function closeResetDialog(){document.getElementById('resetOverlay').classList.add('hidden');document.getElementById('resetOverlay').hidden=true;document.getElementById('resetOverlay').style.setProperty('display','none','important');document.getElementById('resetPassword').value='';resetPasswordPending=''}
+let resetPasswordPending='';
+async function verifyResetPassword(){
+ const password=document.getElementById('resetPassword').value;
+ const error=document.getElementById('resetError');error.textContent='';
+ if(!password){error.textContent='비밀번호를 입력해 주세요.';return}
+ resetPasswordPending=password;
+ document.getElementById('resetPassword').value='';
+ document.getElementById('resetStepPassword').classList.add('hidden');
+ document.getElementById('resetStepConfirm').classList.remove('hidden');
+}
+async function confirmRankingReset(){
+ try{
+  await api('/reset',{method:'POST',body:JSON.stringify({password:resetPasswordPending})});
+  resetPasswordPending='';closeResetDialog();await loadRanking();alert('전체 랭킹이 초기화되었습니다.');
+ }catch(e){resetPasswordPending='';document.getElementById('resetStepConfirm').classList.add('hidden');document.getElementById('resetStepPassword').classList.remove('hidden');document.getElementById('resetError').textContent=e.message}
+}
 
 </script><script>
 /* V31: scale the entire stage together, preserving ball-to-board ratios */
