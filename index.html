@@ -282,6 +282,10 @@
 .ball::before,.drop-preview::before,.next-ball::before{content:""!important;display:block!important;position:absolute!important;inset:0!important;background-image:var(--marble)!important;background-size:100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;opacity:1!important;filter:none!important;transform:none!important;border:0!important;box-shadow:none!important}
 .ball::after,.drop-preview::after,.next-ball::after{content:none!important;display:none!important}
 .ball .marble-letter,.drop-preview .marble-letter,.next-ball .marble-letter{display:none!important}
+
+/* V29: identical 360 x 600 logical playfield on desktop and mobile */
+.game-stage{width:360px!important;max-width:none!important;margin:0 auto!important;}
+.game-board{box-sizing:border-box!important;width:360px!important;max-width:none!important;min-width:360px!important;height:600px!important;min-height:600px!important;max-height:600px!important;}
 </style></head><body><div class="app">
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
@@ -377,14 +381,15 @@ function tick(){
  drawGame();
  if(pieces.some(p=>p.y-radius(p)<10&&Math.abs(p.vy)<1)&&Date.now()-lastDrop>1600)endGame();
 }
-function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(rect.width-r,clientX-rect.left));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
+function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(clientX-rect.left)*(board.clientWidth/rect.width)));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
 function updatePreview(){const r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(Number.isFinite(aimX)?aimX:board.clientWidth/2)));preview.innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';preview.dataset.level=String(nextLevel);preview.style.left=x+'px';guide.style.left=x+'px';preview.style.width=preview.style.height=(r*2)+'px';preview.style.fontSize=Math.round(r*.9)+'px';preview.style.opacity='1'}
 const stage=document.querySelector('.game-stage');
-function pointAt(e){const rect=board.getBoundingClientRect();aimX=Math.max(0,Math.min(rect.width,e.clientX-rect.left));updatePreview()}
+function pointAt(e){const rect=board.getBoundingClientRect();aimX=Math.max(0,Math.min(board.clientWidth,(e.clientX-rect.left)*(board.clientWidth/rect.width)));updatePreview()}
 stage.addEventListener('pointermove',pointAt);
-stage.addEventListener('pointerdown',e=>{if(!gameActive)return;e.preventDefault();pointAt(e);dropAt(board.getBoundingClientRect().left+aimX)});
-board.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();aimX=Math.max(0,Math.min(board.clientWidth,((Number.isFinite(aimX)?aimX:board.clientWidth/2))+(e.key==='ArrowLeft'?-22:22)));updatePreview()}if(e.key===' '||e.key==='Enter'){e.preventDefault();dropAt(board.getBoundingClientRect().left+((Number.isFinite(aimX)?aimX:board.clientWidth/2)))}});
-window.addEventListener('resize',updatePreview);updatePreview();
+stage.addEventListener('pointerdown',e=>{if(!gameActive)return;e.preventDefault();pointAt(e);dropAt(board.getBoundingClientRect().left+aimX*(board.getBoundingClientRect().width/board.clientWidth))});
+board.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();aimX=Math.max(0,Math.min(board.clientWidth,((Number.isFinite(aimX)?aimX:board.clientWidth/2))+(e.key==='ArrowLeft'?-22:22)));updatePreview()}if(e.key===' '||e.key==='Enter'){e.preventDefault();dropAt(board.getBoundingClientRect().left+((Number.isFinite(aimX)?aimX:board.clientWidth/2))*(board.getBoundingClientRect().width/board.clientWidth))}});
+function fitStage(){const available=stage.parentElement.clientWidth;stage.style.zoom=String(Math.min(1,available/360));updatePreview()}
+window.addEventListener('resize',fitStage);fitStage();
 async function api(path,opts={}){if(!RANKING_API)throw Error('공용 랭킹 서버가 아직 연결되지 않았습니다. README의 서버 설정을 완료하세요.');const res=await fetch(RANKING_API.replace(/\/$/,'')+path,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw Error(data.error||'서버 요청 실패');return data}
 async function endGame(){if(!gameActive)return;gameActive=false;clearInterval(gameTimer);const score=gameScore;const best=Math.max(score,Number(document.getElementById('gameBest').textContent)||0);document.getElementById('gameBest').textContent=best;localStorage.setItem('melcheon-best-'+gameNick,String(best));try{await api('/score',{method:'POST',body:JSON.stringify({nickname:gameNick,score})});await loadRanking();alert('점수가 랭킹에 저장되었습니다.')}catch(e){alert('게임 종료. '+e.message)}}
 async function loadRanking(){const list=document.getElementById('rankingList'),status=document.getElementById('rankStatus');list.replaceChildren();try{const data=await api('/ranking');status.textContent='최고 점수 순 · '+data.length+'/50명';data.forEach((x,i)=>{const item=document.createElement('div');item.className='item';const rank=document.createElement('div');rank.className='avatar';rank.textContent=i+1;const name=document.createElement('strong');name.textContent=x.nickname;const score=document.createElement('span');score.className='badge';score.textContent=Number(x.score).toLocaleString()+'점';item.append(rank,name,score);list.append(item)});if(!data.length)list.textContent='아직 등록된 기록이 없습니다.'}catch(e){status.textContent=e.message}}
