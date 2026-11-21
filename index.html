@@ -303,48 +303,71 @@ function drawGame(){board.replaceChildren();for(const p of pieces){const b=docum
 function startGame(){const nick=document.getElementById('gameNickname').value.trim();if(!nick){alert('닉네임을 입력하세요.');return}gameNick=nick;gameScore=0;document.getElementById('gameBest').textContent=localStorage.getItem('melcheon-best-'+nick)||'0';pieces=[];nextLevel=randLevel();gameActive=true;lastDrop=0;document.getElementById('gameScore').textContent='0';document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';aimX=board.clientWidth/2;updatePreview();drawGame();clearInterval(gameTimer);gameTimer=setInterval(tick,25)}
 function tick(){
  if(!gameActive)return;
- const w=board.clientWidth,h=board.clientHeight,dt=1/3;
- for(let step=0;step<3;step++){
+ const w=board.clientWidth,h=board.clientHeight;
+ const radius=p=>sizes[p.level];
+ // Gravity is vertical only. No pairwise attraction or magnetic forces.
+ for(let sub=0;sub<3;sub++){
   for(const p of pieces){
-   const r=sizes[p.level];
-   p.vy=Math.min(14,p.vy+0.75);p.x+=p.vx*dt;p.y+=p.vy*dt;
-   p.vx*=0.992;
-   if(p.x<r){p.x=r;p.vx=Math.max(0,-p.vx*.12)}
-   if(p.x>w-r){p.x=w-r;p.vx=Math.min(0,-p.vx*.12)}
-   if(p.y>h-r){p.y=h-r;p.vy=0;p.vx*=0.75;if(Math.abs(p.vx)<.09)p.vx=0}
+   const r=radius(p);
+   p.vy=Math.min(11,(p.vy||0)+.30);
+   p.vx=(p.vx||0)*.985;
+   p.x+=p.vx/3;p.y+=p.vy/3;
+   if(p.x<r){p.x=r;p.vx=Math.max(0,p.vx)*.12}
+   if(p.x>w-r){p.x=w-r;p.vx=Math.min(0,p.vx)*.12}
+   if(p.y>=h-r){p.y=h-r;p.vy=0;p.vx*=.65}
   }
-  for(let a=0;a<pieces.length;a++)for(let b=a+1;b<pieces.length;b++){
-   const p=pieces[a],q=pieces[b],dx=q.x-p.x,dy=q.y-p.y;
-   const dist=Math.hypot(dx,dy)||.001,min=sizes[p.level]+sizes[q.level];
-   if(dist>=min)continue;
-   if(p.level===q.level&&p.level<sizes.length-1){
-    const lv=p.level+1,r=sizes[lv];p.x=Math.max(r,Math.min(w-r,(p.x+q.x)/2));
-    p.y=Math.max(r,Math.min(h-r,(p.y+q.y)/2));p.level=lv;p.vx=0;p.vy=0;
-    pieces.splice(b,1);gameScore+=2**lv*10;
-    document.getElementById('gameScore').textContent=gameScore;b--;continue;
+  for(let iter=0;iter<5;iter++){
+   let merged=false;
+   outer:for(let a=0;a<pieces.length;a++)for(let b=a+1;b<pieces.length;b++){
+    const p=pieces[a],q=pieces[b],rp=radius(p),rq=radius(q);
+    let dx=q.x-p.x,dy=q.y-p.y;
+    let dist=Math.hypot(dx,dy),sum=rp+rq;
+    if(dist>=sum-.15)continue;
+    if(p.level===q.level&&p.level<sizes.length-1){
+     const nr=sizes[p.level+1];
+     p.x=Math.max(nr,Math.min(w-nr,(p.x+q.x)/2));
+     p.y=Math.max(nr,Math.min(h-nr,(p.y+q.y)/2));
+     p.level++;p.vx=0;p.vy=0;
+     pieces.splice(b,1);gameScore+=2**p.level*10;
+     document.getElementById('gameScore').textContent=gameScore;
+     merged=true;break outer;
+    }
+    if(dist<.0001){dx=0;dy=-1;dist=1}
+    const nx=dx/dist,ny=dy/dist,depth=sum-dist;
+    // Position correction separates overlapping spheres; never draws them together.
+    const pFloor=p.y>=h-rp-.5,qFloor=q.y>=h-rq-.5;
+    const pMass=rp*rp,qMass=rq*rq;
+    let wp=1/pMass,wq=1/qMass;
+    if(pFloor&&ny<-.05)wp=0;
+    if(qFloor&&ny>.05)wq=0;
+    const total=wp+wq||1;
+    const aShare=wp/total,bShare=wq/total;
+    p.x-=nx*depth*aShare;p.y-=ny*depth*aShare;
+    q.x+=nx*depth*bShare;q.y+=ny*depth*bShare;
+    // Only cancel approaching normal velocity. Zero restitution: no elastic pull-back.
+    const approaching=(q.vx-p.vx)*nx+(q.vy-p.vy)*ny;
+    if(approaching<-.04){
+     const impulse=-approaching/total;
+     p.vx-=impulse*wp*nx;p.vy-=impulse*wp*ny;
+     q.vx+=impulse*wq*nx;q.vy+=impulse*wq*ny;
+    }
+    for(const t of [p,q]){
+     const r=radius(t);
+     t.x=Math.max(r,Math.min(w-r,t.x));
+     if(t.y>h-r){t.y=h-r;t.vy=0}
+    }
    }
-   const nx=dx/dist,ny=dy/dist,overlap=min-dist;
-   const mp=sizes[p.level]**2,mq=sizes[q.level]**2;
-   const invp=1/mp,invq=1/mq,sum=invp+invq;
-   const moveP=overlap*invp/sum,moveQ=overlap*invq/sum;
-   p.x-=nx*moveP;p.y-=ny*moveP;q.x+=nx*moveQ;q.y+=ny*moveQ;
-   const rvx=q.vx-p.vx,rvy=q.vy-p.vy,normalSpeed=rvx*nx+rvy*ny;
-   if(normalSpeed<0){
-    const impulse=-(1.04)*normalSpeed/sum;
-    p.vx-=impulse*invp*nx;p.vy-=impulse*invp*ny;
-    q.vx+=impulse*invq*nx;q.vy+=impulse*invq*ny;
-   }
-   // ground contact: friction prevents sliding and artificial attraction
-   for(const ball of [p,q]){
-    const r=sizes[ball.level];
-    if(ball.x<r){ball.x=r;ball.vx=Math.max(0,ball.vx)}
-    if(ball.x>w-r){ball.x=w-r;ball.vx=Math.min(0,ball.vx)}
-    if(ball.y>h-r){ball.y=h-r;ball.vy=0;ball.vx*=.75}
-   }
+   if(merged)continue;
   }
  }
+ for(const p of pieces){
+  const r=radius(p),grounded=p.y>=h-r-.6;
+  if(grounded){p.y=h-r;p.vy=0;p.vx*=.45}
+  if(Math.abs(p.vx)<.16)p.vx=0;
+  if(Math.abs(p.vy)<.08&&grounded)p.vy=0;
+ }
  drawGame();
- if(pieces.some(p=>p.y-sizes[p.level]<10&&Math.abs(p.vy)<1)&&Date.now()-lastDrop>1600)endGame();
+ if(pieces.some(p=>p.y-radius(p)<10&&Math.abs(p.vy)<1)&&Date.now()-lastDrop>1600)endGame();
 }
 function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(rect.width-r,clientX-rect.left));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
 function updatePreview(){const r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(Number.isFinite(aimX)?aimX:board.clientWidth/2)));preview.innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';preview.dataset.level=String(nextLevel);preview.style.left=x+'px';guide.style.left=x+'px';preview.style.width=preview.style.height=(r*2)+'px';preview.style.fontSize=Math.round(r*.9)+'px';preview.style.opacity='1'}
