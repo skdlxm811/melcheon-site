@@ -310,7 +310,7 @@
 'use strict';
 // Replace with your deployed Cloudflare Worker URL. No password is stored in this file.
 const RANKING_API = ''; 
-let gameActive=false, gameScore=0, gameNick='', nextLevel=0, pieces=[], gameTimer=null, lastDrop=0, lineOverflowSince=0;
+let gameActive=false, gameScore=0, gameNick='', nextLevel=0, pieces=[], gameTimer=null, lastDrop=0;
 const board=document.getElementById('gameBoard'), sizes=[14.9625,19.6875,25.9875,33.8625,43.3125,54.3375,66.9375,81.1125,96.075,113.4], emojis=['멸','천','문','파','흥','해','라','파','이','팅'];
 const randLevel=()=>Math.floor(Math.random()*3);let aimX=NaN;const preview=document.getElementById('dropPreview'),guide=document.getElementById('dropGuide');
 function drawGame(){board.replaceChildren();for(const p of pieces){const b=document.createElement('div');b.className='ball';b.innerHTML='<span class="marble-letter">'+emojis[p.level]+'</span>';b.dataset.level=String(p.level);b.style.width=b.style.height=(sizes[p.level]*2)+'px';b.style.left=(p.x-sizes[p.level])+'px';b.style.top=(p.y-sizes[p.level])+'px';b.style.fontSize=(sizes[p.level]*.83)+'px';b.style.setProperty('--shell-angle',((p.angle||0))+'deg');board.appendChild(b)}}
@@ -341,7 +341,7 @@ function tick(){
      const nr=sizes[p.level+1];
      p.x=Math.max(nr,Math.min(w-nr,(p.x+q.x)/2));
      p.y=Math.max(nr,Math.min(h-nr,(p.y+q.y)/2));
-     p.level++;p.vx=0;p.vy=0;
+     p.level++;p.vx=0;p.vy=0;p.bornAt=Math.min(p.bornAt||Date.now(),q.bornAt||Date.now());p.overflowSince=0;
      pieces.splice(b,1);gameScore+=2**p.level*10;
      document.getElementById('gameScore').textContent=gameScore;
      merged=true;break outer;
@@ -388,16 +388,21 @@ function tick(){
   if(Math.abs(p.vy)<.08&&grounded)p.vy=0;
  }
  drawGame();
- // The dashed line is 52px from the top of the board (matching CSS).
- // Newly dropped balls are allowed to cross it while falling; a settled pile is not.
+ // Each ball is judged independently: further drops cannot reset an existing overflow.
+ // The dashed line is at 52 logical pixels from the board top.
  const now=Date.now();
- const overflowing=pieces.some(p=>p.y-radius(p)<=52 && Math.abs(p.vy)<0.9);
- if(now-lastDrop>1600 && overflowing){
-  if(!lineOverflowSince)lineOverflowSince=now;
-  if(now-lineOverflowSince>=700)endGame();
- }else{lineOverflowSince=0;}
+ for(const p of pieces){
+  const pastSpawnGrace=now-(p.bornAt||now)>=1100;
+  const overLine=p.y-radius(p)<=52;
+  if(pastSpawnGrace && overLine){
+   if(!p.overflowSince)p.overflowSince=now;
+   if(now-p.overflowSince>=700){endGame();return;}
+  }else{
+   p.overflowSince=0;
+  }
+ }
 }
-function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(clientX-rect.left)*(board.clientWidth/rect.width)));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now();lineOverflowSince=0}
+function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(clientX-rect.left)*(board.clientWidth/rect.width)));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0,bornAt:Date.now(),overflowSince:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
 function updatePreview(){const r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(Number.isFinite(aimX)?aimX:board.clientWidth/2)));preview.innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';preview.dataset.level=String(nextLevel);preview.style.left=x+'px';guide.style.left=x+'px';preview.style.width=preview.style.height=(r*2)+'px';preview.style.fontSize=Math.round(r*.9)+'px';preview.style.opacity='1'}
 const stage=document.querySelector('.game-stage');
 function pointAt(e){const rect=board.getBoundingClientRect();aimX=Math.max(0,Math.min(board.clientWidth,(e.clientX-rect.left)*(board.clientWidth/rect.width)));updatePreview()}
