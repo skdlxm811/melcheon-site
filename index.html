@@ -311,7 +311,7 @@
 // Replace with your deployed Cloudflare Worker URL. No password is stored in this file.
 const RANKING_API = ''; 
 let gameActive=false, gameScore=0, gameNick='', nextLevel=0, pieces=[], gameTimer=null, lastDrop=0;
-const board=document.getElementById('gameBoard'), sizes=[14.9625,19.6875,25.9875,33.8625,43.3125,54.3375,66.9375,81.1125,96.075,113.4], emojis=['멸','천','문','파','흥','해','라','파','이','팅'];
+const board=document.getElementById('gameBoard'), sizes=[17.955,23.625,31.185,40.635,51.975,65.205,80.325,97.335,115.29,136.08], emojis=['멸','천','문','파','흥','해','라','파','이','팅'];
 const randLevel=()=>Math.floor(Math.random()*3);let aimX=NaN;const preview=document.getElementById('dropPreview'),guide=document.getElementById('dropGuide');
 function drawGame(){board.replaceChildren();for(const p of pieces){const b=document.createElement('div');b.className='ball';b.innerHTML='<span class="marble-letter">'+emojis[p.level]+'</span>';b.dataset.level=String(p.level);b.style.width=b.style.height=(sizes[p.level]*2)+'px';b.style.left=(p.x-sizes[p.level])+'px';b.style.top=(p.y-sizes[p.level])+'px';b.style.fontSize=(sizes[p.level]*.83)+'px';b.style.setProperty('--shell-angle',((p.angle||0))+'deg');board.appendChild(b)}}
 function startGame(){const nick=document.getElementById('gameNickname').value.trim();if(!nick){alert('닉네임을 입력하세요.');return}gameNick=nick;gameScore=0;document.getElementById('gameBest').textContent=localStorage.getItem('melcheon-best-'+nick)||'0';pieces=[];nextLevel=randLevel();gameActive=true;lastDrop=0;document.getElementById('gameScore').textContent='0';document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';aimX=board.clientWidth/2;updatePreview();drawGame();clearInterval(gameTimer);gameTimer=setInterval(tick,25)}
@@ -328,7 +328,7 @@ function tick(){
    p.x+=p.vx/3;p.y+=p.vy/3;
    if(p.x<r){p.x=r;p.vx=Math.max(0,p.vx)*.12}
    if(p.x>w-r){p.x=w-r;p.vx=Math.min(0,p.vx)*.12}
-   if(p.y>=h-r){p.y=h-r;p.vy=0;p.vx*=.78}
+   if(p.y>=h-r){p.y=h-r;p.vy=0;p.vx*=.78;p.landed=true}
   }
   for(let iter=0;iter<5;iter++){
    let merged=false;
@@ -341,11 +341,12 @@ function tick(){
      const nr=sizes[p.level+1];
      p.x=Math.max(nr,Math.min(w-nr,(p.x+q.x)/2));
      p.y=Math.max(nr,Math.min(h-nr,(p.y+q.y)/2));
-     p.level++;p.vx=0;p.vy=0;p.bornAt=Math.min(p.bornAt||Date.now(),q.bornAt||Date.now());p.overflowSince=0;
+     p.level++;p.vx=0;p.vy=0;p.bornAt=Math.min(p.bornAt||Date.now(),q.bornAt||Date.now());p.landed=!!(p.landed||q.landed);p.overflowSince=0;
      pieces.splice(b,1);gameScore+=2**p.level*10;
      document.getElementById('gameScore').textContent=gameScore;
      merged=true;break outer;
     }
+    p.landed=true;q.landed=true;
     if(dist<.0001){dx=0;dy=-1;dist=1}
     const nx=dx/dist,ny=dy/dist,depth=sum-dist;
     // Position correction separates overlapping spheres; never draws them together.
@@ -383,26 +384,19 @@ function tick(){
  }
  for(const p of pieces){
   const r=radius(p),grounded=p.y>=h-r-.6;
-  if(grounded){p.y=h-r;p.vy=0;p.vx*=.84}
+  if(grounded){p.y=h-r;p.vy=0;p.vx*=.84;p.landed=true}
   if(Math.abs(p.vx)<.055)p.vx=0;
   if(Math.abs(p.vy)<.08&&grounded)p.vy=0;
  }
  drawGame();
- // Each ball is judged independently: further drops cannot reset an existing overflow.
- // The dashed line is at 52 logical pixels from the board top.
- const now=Date.now();
+ // Immediate game over: a supported/touching ball reaches the visible dashed line.
+ // Newly spawned balls are exempt only while freely falling, not for a fixed time.
+ // The same logical 52px line is used on desktop and mobile.
  for(const p of pieces){
-  const pastSpawnGrace=now-(p.bornAt||now)>=1100;
-  const overLine=p.y-radius(p)<=52;
-  if(pastSpawnGrace && overLine){
-   if(!p.overflowSince)p.overflowSince=now;
-   if(now-p.overflowSince>=700){endGame();return;}
-  }else{
-   p.overflowSince=0;
-  }
+  if(p.landed && p.y-radius(p)<=52){endGame();return;}
  }
 }
-function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(clientX-rect.left)*(board.clientWidth/rect.width)));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0,bornAt:Date.now(),overflowSince:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
+function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(clientX-rect.left)*(board.clientWidth/rect.width)));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0,bornAt:Date.now(),overflowSince:0,landed:false});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
 function updatePreview(){const r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(Number.isFinite(aimX)?aimX:board.clientWidth/2)));preview.innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';preview.dataset.level=String(nextLevel);preview.style.left=x+'px';guide.style.left=x+'px';preview.style.width=preview.style.height=(r*2)+'px';preview.style.fontSize=Math.round(r*.9)+'px';preview.style.opacity='1'}
 const stage=document.querySelector('.game-stage');
 function pointAt(e){const rect=board.getBoundingClientRect();aimX=Math.max(0,Math.min(board.clientWidth,(e.clientX-rect.left)*(board.clientWidth/rect.width)));updatePreview()}
