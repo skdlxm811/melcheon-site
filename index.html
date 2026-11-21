@@ -310,11 +310,11 @@ function tick(){
   for(const p of pieces){
    const r=radius(p);
    p.vy=Math.min(11,(p.vy||0)+.30);
-   p.vx=(p.vx||0)*.985;
+   p.vx=(p.vx||0)*.94;
    p.x+=p.vx/3;p.y+=p.vy/3;
    if(p.x<r){p.x=r;p.vx=Math.max(0,p.vx)*.12}
    if(p.x>w-r){p.x=w-r;p.vx=Math.min(0,p.vx)*.12}
-   if(p.y>=h-r){p.y=h-r;p.vy=0;p.vx*=.65}
+   if(p.y>=h-r){p.y=h-r;p.vy=0;p.vx*=.30}
   }
   for(let iter=0;iter<5;iter++){
    let merged=false;
@@ -351,6 +351,13 @@ function tick(){
      p.vx-=impulse*wp*nx;p.vy-=impulse*wp*ny;
      q.vx+=impulse*wq*nx;q.vy+=impulse*wq*ny;
     }
+    // Contact friction: damp only relative sideways sliding at actual contact.
+    // No attractive force: this never changes position or pulls apart objects together.
+    const tx=-ny,ty=nx;
+    const relativeSlide=(q.vx-p.vx)*tx+(q.vy-p.vy)*ty;
+    const frictionImpulse=-relativeSlide*.36/(total||1);
+    p.vx-=frictionImpulse*wp*tx;p.vy-=frictionImpulse*wp*ty;
+    q.vx+=frictionImpulse*wq*tx;q.vy+=frictionImpulse*wq*ty;
     for(const t of [p,q]){
      const r=radius(t);
      t.x=Math.max(r,Math.min(w-r,t.x));
@@ -362,8 +369,8 @@ function tick(){
  }
  for(const p of pieces){
   const r=radius(p),grounded=p.y>=h-r-.6;
-  if(grounded){p.y=h-r;p.vy=0;p.vx*=.45}
-  if(Math.abs(p.vx)<.16)p.vx=0;
+  if(grounded){p.y=h-r;p.vy=0;p.vx*=.20}
+  if(Math.abs(p.vx)<.25)p.vx=0;
   if(Math.abs(p.vy)<.08&&grounded)p.vy=0;
  }
  drawGame();
