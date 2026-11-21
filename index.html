@@ -105,6 +105,52 @@
  box-shadow:inset 0 0 9px #ffffff66!important;pointer-events:none;border-radius:50%}
 .drop-preview .marble-letter{transform:rotateX(-12deg)}
 .next-ball .marble-letter{transform:rotateX(-12deg)}
+
+/* V10: 동양풍 옥구슬 / 자개와 금빛 장식 */
+.ball,.drop-preview,.next-ball{
+ --jade-light:#e5fff4;--jade-mid:#79c8b6;--jade-deep:#185f65;
+ border-radius:50%!important;position:absolute;isolation:isolate;
+ background:
+ radial-gradient(ellipse at 26% 16%,#ffffffec 0%,#ffffff70 10%,transparent 28%),
+ radial-gradient(ellipse at 68% 78%,#071e3677 0%,transparent 44%),
+ radial-gradient(circle at 42% 38%,var(--jade-light) 0%,var(--jade-mid) 40%,var(--jade-deep) 84%,#0e2b3d 100%)!important;
+ border:2px solid #f4dba0!important;
+ box-shadow:inset 3px 5px 10px #ffffffb5,inset -8px -12px 20px #031c3888,0 5px 12px #0008,0 0 0 1px #8c622b!important;
+ overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;
+}
+.ball::before,.drop-preview::before,.next-ball::before{
+ content:""!important;position:absolute!important;inset:6%!important;width:auto!important;height:auto!important;
+ background:repeating-conic-gradient(from 5deg,#ffe8a777 0deg 3deg,transparent 3deg 25deg)!important;
+ border:1px solid #ffe6a45e!important;border-radius:50%!important;
+ transform:none!important;filter:none!important;opacity:.65!important;pointer-events:none!important;z-index:1!important;
+ -webkit-mask:radial-gradient(circle,transparent 0 79%,#000 83% 100%);mask:radial-gradient(circle,transparent 0 79%,#000 83% 100%);
+}
+.ball::after,.drop-preview::after,.next-ball::after{
+ content:""!important;display:block!important;position:absolute!important;inset:0!important;
+ border-radius:50%!important;
+ background:radial-gradient(ellipse at 28% 17%,#ffffffa9,transparent 28%),radial-gradient(ellipse at 77% 84%,#fff9d777,transparent 24%)!important;
+ box-shadow:inset 0 0 9px #ffffff55!important;pointer-events:none!important;z-index:3!important;
+}
+.marble-letter{position:relative;z-index:2!important;display:block!important;
+ font-family:"Malgun Gothic","Noto Serif CJK KR",serif!important;
+ font-weight:1000!important;line-height:1!important;color:#fff7da!important;
+ transform:rotate(var(--roll,0deg)) rotateX(-15deg)!important;
+ -webkit-text-stroke:.65px #fbe4a7!important;
+ text-shadow:1px 1px 0 #f5d88c,2px 2px 0 #bb873a,3px 3px 0 #81541c,4px 5px 0 #533719,5px 7px 8px #061c2be8,-1px -2px 3px #fff!important;
+ filter:drop-shadow(0 0 3px #f8edc888)!important;
+}
+.ball[data-level="0"],.drop-preview[data-level="0"],.next-ball[data-level="0"]{--jade-light:#e6fff7;--jade-mid:#95d4bf;--jade-deep:#286e6b}
+.ball[data-level="1"],.drop-preview[data-level="1"],.next-ball[data-level="1"]{--jade-light:#eaf6ff;--jade-mid:#95bce1;--jade-deep:#385c96}
+.ball[data-level="2"],.drop-preview[data-level="2"],.next-ball[data-level="2"]{--jade-light:#fff0f7;--jade-mid:#e6accb;--jade-deep:#99507e}
+.ball[data-level="3"],.drop-preview[data-level="3"],.next-ball[data-level="3"]{--jade-light:#fff8df;--jade-mid:#eac67b;--jade-deep:#95631d}
+.ball[data-level="4"],.drop-preview[data-level="4"],.next-ball[data-level="4"]{--jade-light:#ecfff0;--jade-mid:#a2d88b;--jade-deep:#487b40}
+.ball[data-level="5"],.drop-preview[data-level="5"],.next-ball[data-level="5"]{--jade-light:#e9fbff;--jade-mid:#83cbdc;--jade-deep:#25677b}
+.ball[data-level="6"],.drop-preview[data-level="6"],.next-ball[data-level="6"]{--jade-light:#f4ecff;--jade-mid:#b5a1e2;--jade-deep:#5e468e}
+.ball[data-level="7"],.drop-preview[data-level="7"],.next-ball[data-level="7"]{--jade-light:#fff2e9;--jade-mid:#e6a77c;--jade-deep:#a2513b}
+.ball[data-level="8"],.drop-preview[data-level="8"],.next-ball[data-level="8"]{--jade-light:#f8ffe9;--jade-mid:#cad881;--jade-deep:#677c31}
+.ball[data-level="9"],.drop-preview[data-level="9"],.next-ball[data-level="9"]{--jade-light:#fff9de;--jade-mid:#edcf75;--jade-deep:#a47724}
+.next-ball{position:relative!important;width:48px!important;height:48px!important;font-size:23px!important}
+.next-ball .marble-letter,.drop-preview .marble-letter{transform:rotateX(-15deg)!important}
 </style></head><body><div class="app">
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
@@ -121,11 +167,11 @@
 // Replace with your deployed Cloudflare Worker URL. No password is stored in this file.
 const RANKING_API = ''; 
 let gameActive=false, gameScore=0, gameNick='', nextLevel=0, pieces=[], gameTimer=null, lastDrop=0;
-const board=document.getElementById('gameBoard'), sizes=[19,26,35,46,60,77,98], emojis=['멸','천','문','파','흥','해','라'];
+const board=document.getElementById('gameBoard'), sizes=[19,25,33,43,55,69,85,103,122,144], emojis=['멸','천','문','파','흥','해','라','파','이','팅'];
 const randLevel=()=>Math.floor(Math.random()*3);let aimX=NaN;const preview=document.getElementById('dropPreview'),guide=document.getElementById('dropGuide');
-function drawGame(){board.replaceChildren();for(const p of pieces){const b=document.createElement('div');b.className='ball';b.innerHTML='<span class="marble-letter">'+emojis[p.level]+'</span>';b.dataset.level=String(p.level);b.style.width=b.style.height=(sizes[p.level]*2)+'px';b.style.left=(p.x-sizes[p.level])+'px';b.style.top=(p.y-sizes[p.level])+'px';b.style.fontSize=(sizes[p.level]*.85)+'px';b.style.setProperty('--roll',((p.angle||0))+'deg');board.appendChild(b)}}
+function drawGame(){board.replaceChildren();for(const p of pieces){const b=document.createElement('div');b.className='ball';b.innerHTML='<span class="marble-letter">'+emojis[p.level]+'</span>';b.dataset.level=String(p.level);b.style.width=b.style.height=(sizes[p.level]*2)+'px';b.style.left=(p.x-sizes[p.level])+'px';b.style.top=(p.y-sizes[p.level])+'px';b.style.fontSize=(sizes[p.level]*.83)+'px';b.style.setProperty('--roll',((p.angle||0))+'deg');board.appendChild(b)}}
 function startGame(){const nick=document.getElementById('gameNickname').value.trim();if(!nick){alert('닉네임을 입력하세요.');return}gameNick=nick;gameScore=0;document.getElementById('gameBest').textContent=localStorage.getItem('melcheon-best-'+nick)||'0';pieces=[];nextLevel=randLevel();gameActive=true;lastDrop=0;document.getElementById('gameScore').textContent='0';document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';aimX=board.clientWidth/2;updatePreview();drawGame();clearInterval(gameTimer);gameTimer=setInterval(tick,25)}
-function tick(){if(!gameActive)return;const w=board.clientWidth,h=board.clientHeight;for(let i=0;i<3;i++){for(const p of pieces){p.vy=Math.min(9,p.vy+.22);p.y+=p.vy;p.x+=p.vx;p.angle=(p.angle||0)+(p.vx/Math.max(1,sizes[p.level]))*57.2958;p.vx*=.96;const r=sizes[p.level];if(p.x<r){p.x=r;p.vx=0}if(p.x>w-r){p.x=w-r;p.vx=0}if(p.y>h-r){p.y=h-r;p.vy=0} }for(let a=0;a<pieces.length;a++)for(let b=a+1;b<pieces.length;b++){const p=pieces[a],q=pieces[b],dx=q.x-p.x,dy=q.y-p.y,dist=Math.hypot(dx,dy)||1,min=sizes[p.level]+sizes[q.level];if(dist<min){if(p.level===q.level&&p.level<6){const lv=p.level+1;p.x=(p.x+q.x)/2;p.y=(p.y+q.y)/2;p.level=lv;p.vx=0;p.vy=0;pieces.splice(b,1);gameScore+=2**lv*10;document.getElementById('gameScore').textContent=gameScore; b--;continue}const overlap=(min-dist)/2,nx=dx/dist,ny=dy/dist;p.x-=nx*overlap;p.y-=ny*overlap;q.x+=nx*overlap;q.y+=ny*overlap;const slip=(q.vy-p.vy)*nx*.12;p.vx-=slip;q.vx+=slip;p.angle=(p.angle||0)-slip*1.5;q.angle=(q.angle||0)+slip*1.5;p.vy=Math.min(p.vy,1);q.vy=Math.min(q.vy,1)}}}drawGame();if(pieces.some(p=>p.y-sizes[p.level]<10&&Math.abs(p.vy)<1)&&Date.now()-lastDrop>1600)endGame()}
+function tick(){if(!gameActive)return;const w=board.clientWidth,h=board.clientHeight;for(let i=0;i<3;i++){for(const p of pieces){p.vy=Math.min(9,p.vy+.22);p.y+=p.vy;p.x+=p.vx;p.angle=(p.angle||0)+(p.vx/Math.max(1,sizes[p.level]))*57.2958;p.vx*=.96;const r=sizes[p.level];if(p.x<r){p.x=r;p.vx=0}if(p.x>w-r){p.x=w-r;p.vx=0}if(p.y>h-r){p.y=h-r;p.vy=0} }for(let a=0;a<pieces.length;a++)for(let b=a+1;b<pieces.length;b++){const p=pieces[a],q=pieces[b],dx=q.x-p.x,dy=q.y-p.y,dist=Math.hypot(dx,dy)||1,min=sizes[p.level]+sizes[q.level];if(dist<min){if(p.level===q.level&&p.level<sizes.length-1){const lv=p.level+1;p.x=(p.x+q.x)/2;p.y=(p.y+q.y)/2;p.level=lv;p.x=Math.max(sizes[lv],Math.min(w-sizes[lv],p.x));p.y=Math.min(h-sizes[lv],Math.max(sizes[lv],p.y));p.vx=0;p.vy=0;pieces.splice(b,1);gameScore+=2**lv*10;document.getElementById('gameScore').textContent=gameScore; b--;continue}const overlap=(min-dist)/2,nx=dx/dist,ny=dy/dist;p.x-=nx*overlap;p.y-=ny*overlap;q.x+=nx*overlap;q.y+=ny*overlap;const slip=(q.vy-p.vy)*nx*.12;p.vx-=slip;q.vx+=slip;p.angle=(p.angle||0)-slip*1.5;q.angle=(q.angle||0)+slip*1.5;p.vy=Math.min(p.vy,1);q.vy=Math.min(q.vy,1)}}}drawGame();if(pieces.some(p=>p.y-sizes[p.level]<10&&Math.abs(p.vy)<1)&&Date.now()-lastDrop>1600)endGame()}
 function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(rect.width-r,clientX-rect.left));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
 function updatePreview(){const r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(Number.isFinite(aimX)?aimX:board.clientWidth/2)));preview.innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';preview.dataset.level=String(nextLevel);preview.style.left=x+'px';guide.style.left=x+'px';preview.style.width=preview.style.height=(r*2)+'px';preview.style.fontSize=Math.round(r*.9)+'px';preview.style.opacity=gameActive?'1':'.45'}
 const stage=document.querySelector('.game-stage');
