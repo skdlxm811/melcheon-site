@@ -151,6 +151,42 @@
 .ball[data-level="9"],.drop-preview[data-level="9"],.next-ball[data-level="9"]{--jade-light:#fff9de;--jade-mid:#edcf75;--jade-deep:#a47724}
 .next-ball{position:relative!important;width:48px!important;height:48px!important;font-size:23px!important}
 .next-ball .marble-letter,.drop-preview .marble-letter{transform:rotateX(-15deg)!important}
+
+/* V11: stationary lettering, rotating jeweled shell */
+.ball,.drop-preview,.next-ball{
+ --gem-a:#e8fff8;--gem-b:#67c7ae;--gem-c:#125d65;--ring:#f3d999;
+ background:radial-gradient(circle at 28% 19%,#fff9 0%,transparent 26%),radial-gradient(circle at 40% 34%,var(--gem-a) 0%,var(--gem-b) 49%,var(--gem-c) 100%)!important;
+ border:2px solid var(--ring)!important;box-shadow:inset 4px 5px 13px #ffffff99,inset -8px -11px 18px #071b3e88,0 4px 11px #0008,0 0 0 1px #fff6!important;
+ border-radius:50%!important;overflow:hidden!important;position:absolute;isolation:isolate;
+}
+.ball::before,.drop-preview::before,.next-ball::before{
+ content:""!important;display:block!important;position:absolute!important;inset:7%!important;width:auto!important;height:auto!important;
+ border-radius:50%!important;opacity:.75!important;filter:none!important;
+ background:var(--motif)!important;border:1px solid #ffffff55!important;
+ transform:rotate(var(--shell-angle,0deg))!important;transform-origin:50% 50%!important;
+ mask:none!important;-webkit-mask:none!important;z-index:1!important;
+}
+.ball::after,.drop-preview::after,.next-ball::after{
+ content:""!important;display:block!important;position:absolute!important;inset:0!important;
+ background:radial-gradient(ellipse at 24% 15%,#fff9,transparent 27%),radial-gradient(ellipse at 74% 80%,#fff6,transparent 27%)!important;
+ border-radius:50%!important;pointer-events:none!important;z-index:4!important;
+}
+.marble-letter{position:relative!important;z-index:3!important;transform:none!important;rotate:0deg!important;
+ color:#fff9e9!important;font-family:"Malgun Gothic",sans-serif!important;font-weight:900!important;
+ text-shadow:0 2px 2px #091b34,1px 2px 0 #806c53,0 0 7px #142d56!important;
+ -webkit-text-stroke:.35px #fff8!important;filter:none!important;
+}
+.ball[data-level="0"],.drop-preview[data-level="0"],.next-ball[data-level="0"]{--gem-a:#f3fff5;--gem-b:#7acaa8;--gem-c:#17695b;--motif:repeating-conic-gradient(from 12deg,#fff8 0deg 3deg,transparent 3deg 38deg)}
+.ball[data-level="1"],.drop-preview[data-level="1"],.next-ball[data-level="1"]{--gem-a:#f3fbff;--gem-b:#8bc5e7;--gem-c:#205b9b;--motif:repeating-radial-gradient(ellipse at 30% 60%,transparent 0 7px,#d5ffff66 8px 9px,transparent 10px 16px)}
+.ball[data-level="2"],.drop-preview[data-level="2"],.next-ball[data-level="2"]{--gem-a:#fff5fa;--gem-b:#e7a8c7;--gem-c:#873e7c;--motif:repeating-conic-gradient(from 15deg,#fff6 0deg 9deg,transparent 9deg 35deg)}
+.ball[data-level="3"],.drop-preview[data-level="3"],.next-ball[data-level="3"]{--gem-a:#fff7e3;--gem-b:#e5b66c;--gem-c:#85501c;--motif:repeating-conic-gradient(from 0deg,#ffe5a999 0deg 2deg,transparent 2deg 28deg)}
+.ball[data-level="4"],.drop-preview[data-level="4"],.next-ball[data-level="4"]{--gem-a:#f3ffe8;--gem-b:#9ec86c;--gem-c:#3b6428;--motif:repeating-radial-gradient(circle at 25% 25%,transparent 0 10px,#f6ffb877 11px 12px,transparent 13px 21px)}
+.ball[data-level="5"],.drop-preview[data-level="5"],.next-ball[data-level="5"]{--gem-a:#efffff;--gem-b:#69d4d7;--gem-c:#155e86;--motif:repeating-conic-gradient(from 5deg,#e2ffffaa 0deg 7deg,transparent 7deg 33deg)}
+.ball[data-level="6"],.drop-preview[data-level="6"],.next-ball[data-level="6"]{--gem-a:#f8efff;--gem-b:#ad91df;--gem-c:#55328e;--motif:repeating-conic-gradient(from 0deg,#f8e9ff99 0deg 3deg,transparent 3deg 22deg)}
+.ball[data-level="7"],.drop-preview[data-level="7"],.next-ball[data-level="7"]{--gem-a:#fff1dc;--gem-b:#d8945d;--gem-c:#8b3435;--motif:repeating-radial-gradient(ellipse at 70% 30%,transparent 0 13px,#ffe7bd99 14px 16px,transparent 17px 26px)}
+.ball[data-level="8"],.drop-preview[data-level="8"],.next-ball[data-level="8"]{--gem-a:#faffdf;--gem-b:#c8d96d;--gem-c:#596d24;--motif:repeating-conic-gradient(from 12deg,#fffbc6bb 0deg 6deg,transparent 6deg 26deg)}
+.ball[data-level="9"],.drop-preview[data-level="9"],.next-ball[data-level="9"]{--gem-a:#fff9da;--gem-b:#f4ca64;--gem-c:#9b521f;--ring:#fff1bd;--motif:repeating-conic-gradient(from 10deg,#fff8d8bb 0deg 7deg,transparent 7deg 22deg)}
+.drop-preview::before,.next-ball::before{transform:none!important}
 </style></head><body><div class="app">
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
@@ -169,7 +205,7 @@ const RANKING_API = '';
 let gameActive=false, gameScore=0, gameNick='', nextLevel=0, pieces=[], gameTimer=null, lastDrop=0;
 const board=document.getElementById('gameBoard'), sizes=[19,25,33,43,55,69,85,103,122,144], emojis=['멸','천','문','파','흥','해','라','파','이','팅'];
 const randLevel=()=>Math.floor(Math.random()*3);let aimX=NaN;const preview=document.getElementById('dropPreview'),guide=document.getElementById('dropGuide');
-function drawGame(){board.replaceChildren();for(const p of pieces){const b=document.createElement('div');b.className='ball';b.innerHTML='<span class="marble-letter">'+emojis[p.level]+'</span>';b.dataset.level=String(p.level);b.style.width=b.style.height=(sizes[p.level]*2)+'px';b.style.left=(p.x-sizes[p.level])+'px';b.style.top=(p.y-sizes[p.level])+'px';b.style.fontSize=(sizes[p.level]*.83)+'px';b.style.setProperty('--roll',((p.angle||0))+'deg');board.appendChild(b)}}
+function drawGame(){board.replaceChildren();for(const p of pieces){const b=document.createElement('div');b.className='ball';b.innerHTML='<span class="marble-letter">'+emojis[p.level]+'</span>';b.dataset.level=String(p.level);b.style.width=b.style.height=(sizes[p.level]*2)+'px';b.style.left=(p.x-sizes[p.level])+'px';b.style.top=(p.y-sizes[p.level])+'px';b.style.fontSize=(sizes[p.level]*.83)+'px';b.style.setProperty('--shell-angle',((p.angle||0))+'deg');board.appendChild(b)}}
 function startGame(){const nick=document.getElementById('gameNickname').value.trim();if(!nick){alert('닉네임을 입력하세요.');return}gameNick=nick;gameScore=0;document.getElementById('gameBest').textContent=localStorage.getItem('melcheon-best-'+nick)||'0';pieces=[];nextLevel=randLevel();gameActive=true;lastDrop=0;document.getElementById('gameScore').textContent='0';document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';aimX=board.clientWidth/2;updatePreview();drawGame();clearInterval(gameTimer);gameTimer=setInterval(tick,25)}
 function tick(){if(!gameActive)return;const w=board.clientWidth,h=board.clientHeight;for(let i=0;i<3;i++){for(const p of pieces){p.vy=Math.min(9,p.vy+.22);p.y+=p.vy;p.x+=p.vx;p.angle=(p.angle||0)+(p.vx/Math.max(1,sizes[p.level]))*57.2958;p.vx*=.96;const r=sizes[p.level];if(p.x<r){p.x=r;p.vx=0}if(p.x>w-r){p.x=w-r;p.vx=0}if(p.y>h-r){p.y=h-r;p.vy=0} }for(let a=0;a<pieces.length;a++)for(let b=a+1;b<pieces.length;b++){const p=pieces[a],q=pieces[b],dx=q.x-p.x,dy=q.y-p.y,dist=Math.hypot(dx,dy)||1,min=sizes[p.level]+sizes[q.level];if(dist<min){if(p.level===q.level&&p.level<sizes.length-1){const lv=p.level+1;p.x=(p.x+q.x)/2;p.y=(p.y+q.y)/2;p.level=lv;p.x=Math.max(sizes[lv],Math.min(w-sizes[lv],p.x));p.y=Math.min(h-sizes[lv],Math.max(sizes[lv],p.y));p.vx=0;p.vy=0;pieces.splice(b,1);gameScore+=2**lv*10;document.getElementById('gameScore').textContent=gameScore; b--;continue}const overlap=(min-dist)/2,nx=dx/dist,ny=dy/dist;p.x-=nx*overlap;p.y-=ny*overlap;q.x+=nx*overlap;q.y+=ny*overlap;const slip=(q.vy-p.vy)*nx*.12;p.vx-=slip;q.vx+=slip;p.angle=(p.angle||0)-slip*1.5;q.angle=(q.angle||0)+slip*1.5;p.vy=Math.min(p.vy,1);q.vy=Math.min(q.vy,1)}}}drawGame();if(pieces.some(p=>p.y-sizes[p.level]<10&&Math.abs(p.vy)<1)&&Date.now()-lastDrop>1600)endGame()}
 function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return;const rect=board.getBoundingClientRect(),r=sizes[nextLevel],x=Math.max(r,Math.min(rect.width-r,clientX-rect.left));pieces.push({x,y:r+2,level:nextLevel,vx:0,vy:0,angle:0});nextLevel=randLevel();document.getElementById('gameNext').dataset.level=String(nextLevel);document.getElementById('gameNext').innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';updatePreview();lastDrop=Date.now()}
