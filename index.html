@@ -6,7 +6,20 @@
 .game-board{position:relative;height:440px;max-width:360px;margin:auto;background:linear-gradient(#182541,#0c1424);border:2px solid #78633e;border-radius:14px;overflow:hidden;touch-action:none}.ball{position:absolute;border-radius:50%;display:grid;place-items:center;border:2px solid #ffffff65;box-shadow:inset -5px -7px 12px #0005,0 4px 8px #0005;user-select:none}.game-hint{text-align:center;color:var(--muted);font-size:12px}.overlay{position:fixed;inset:0;background:#000b;z-index:50;display:grid;place-items:center;padding:16px}.overlay.hidden,.overlay[hidden]{display:none!important}.dialog{width:min(100%,400px);background:#141e32;border:1px solid var(--gold);border-radius:16px;padding:20px}.dialog h2{margin-top:0}.danger{border-color:#b96363;color:#ffbaba}.game-board:focus{outline:2px solid var(--gold)}
 
 .app{padding-bottom:20px}.game-board{width:100%}.hero{padding:22px 20px}.section{padding-top:10px}.formrow input{min-width:0}@media(max-width:390px){.formrow{flex-wrap:wrap}.formrow>*{flex:1 1 100%}}
-.game-stage{position:relative;touch-action:none;width:100%;max-width:360px;margin:0 auto}.drop-preview{position:absolute;top:8px;left:50%;z-index:5;pointer-events:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#edbd66;border:2px solid #fff1c5;box-shadow:0 2px 12px #000b;transform:translateX(-50%)}.drop-guide{position:absolute;top:48px;bottom:0;left:50%;width:2px;background:linear-gradient(#f8d889bb,#f8d88900 45%);z-index:4;pointer-events:none;transform:translateX(-50%)}.game-board{touch-action:none;cursor:crosshair}.ball{box-shadow:inset -5px -7px 14px #0004,inset 4px 5px 12px #fff5,0 5px 12px #0006!important;border:2px solid #f6d69a99!important}.game-board:before{content:"";position:absolute;top:52px;left:0;right:0;border-top:2px dashed #eabf7088;pointer-events:none;z-index:2}.game-hint{line-height:1.65}</style></head><body><div class="app">
+.game-stage{position:relative;touch-action:none;width:100%;max-width:360px;margin:0 auto}.drop-preview{position:absolute;top:8px;left:50%;z-index:5;pointer-events:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#edbd66;border:2px solid #fff1c5;box-shadow:0 2px 12px #000b;transform:translateX(-50%)}.drop-guide{position:absolute;top:48px;bottom:0;left:50%;width:2px;background:linear-gradient(#f8d889bb,#f8d88900 45%);z-index:4;pointer-events:none;transform:translateX(-50%)}.game-board{touch-action:none;cursor:crosshair}.ball{box-shadow:inset -5px -7px 14px #0004,inset 4px 5px 12px #fff5,0 5px 12px #0006!important;border:2px solid #f6d69a99!important}.game-board:before{content:"";position:absolute;top:52px;left:0;right:0;border-top:2px dashed #eabf7088;pointer-events:none;z-index:2}.game-hint{line-height:1.65}
+.ball,.drop-preview{background:radial-gradient(circle at 30% 25%,#fff9df 0%,#f7e7c1 33%,#d6a86b 78%,#9d6943 100%)!important;box-shadow:inset -5px -6px 12px #7c452c66,inset 4px 4px 10px #fff8,0 4px 9px #0006!important;border:2px solid #fff1d5!important}
+.ball:after,.drop-preview:after{content:"";position:absolute;inset:24%;border-radius:50%;background:var(--filling,#eabf85);box-shadow:inset 1px 2px 6px #fff8,0 1px 5px #77472a66}
+.ball[data-level="0"],.drop-preview[data-level="0"]{--filling:#f7d6b2}
+.ball[data-level="1"],.drop-preview[data-level="1"]{--filling:#f1a9b5}
+.ball[data-level="2"],.drop-preview[data-level="2"]{--filling:#b6d6a0}
+.ball[data-level="3"],.drop-preview[data-level="3"]{--filling:#d5b5e8}
+.ball[data-level="4"],.drop-preview[data-level="4"]{--filling:#f6ce73}
+.ball[data-level="5"],.drop-preview[data-level="5"]{--filling:#8ac9d7}
+.ball[data-level="6"],.drop-preview[data-level="6"]{--filling:#e7a96b}
+.drop-preview{width:36px;height:36px;top:8px;z-index:8;box-sizing:border-box;pointer-events:none}
+.drop-guide{z-index:7;pointer-events:none}
+.game-stage{touch-action:none;user-select:none}
+</style></head><body><div class="app">
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
 
@@ -17,4 +30,4 @@
 
 </main><div class="footnote">멸천문파 · 경단 만들기 미니게임</div>
 </div><div aria-labelledby="resetTitle" aria-modal="true" class="overlay hidden" id="resetOverlay" hidden style="display:none!important" role="dialog"><div class="dialog"><h2 id="resetTitle">🔒 관리자 비밀번호 인증</h2><div id="resetStepPassword"><p class="muted">랭킹을 초기화하려면 관리자 비밀번호를 입력하세요.</p><input autocomplete="off" id="resetPassword" placeholder="관리자 비밀번호" type="password"/><p id="resetError" role="alert" style="color:#ffaaaa"></p><div class="formrow"><button class="btn ghost" onclick="closeResetDialog()">취소</button><button class="btn primary" onclick="verifyResetPassword()">비밀번호 확인</button></div></div><div class="hidden" id="resetStepConfirm"><p>정말로 멸천문파 전체 랭킹을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p><div class="formrow"><button class="btn ghost" onclick="closeResetDialog()">취소</button><button class="btn danger" onclick="confirmRankingReset()">전체 초기화 실행</button></div></div></div></div>
-<script defer="" src="game.js?v=drop-position-fixed-4"></script></body></html>
+<script defer="" src="game.js?v=aim-click-fixed-5"></script></body></html>
