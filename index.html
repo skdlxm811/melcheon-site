@@ -299,7 +299,7 @@
 <header class="hero"><div class="brand"><div class="crest">滅</div><div><div class="eyebrow">THE MUNPA · MELCHEON</div><h1>멸천 문파</h1><div class="sub">하늘을 넘어, 함께 나아가다</div></div></div></header>
 <main>
 
-<section class="section" id="game"><div class="card"><h2>🍡 멸천문파 유리구슬 합치기</h2><div class="formrow"><input id="gameNickname" maxlength="16" placeholder="문파원 닉네임"/><button class="btn primary" onclick="startGame()">게임 시작</button></div><p class="muted" style="font-size:12px">좌우로 이동해 놓을 위치를 정하고 떨어뜨리세요. 같은 구슬끼리 만나면 더 큰 경단으로 합쳐집니다.</p><div class="stats" style="margin:12px 0"><div class="stat"><label>현재 점수</label><strong id="gameScore">0</strong></div><div class="stat"><label>최고 점수</label><strong id="gameBest">0</strong></div><div class="stat"><label>다음 구슬</label><strong id="gameNext" class="next-ball" data-level="0" aria-label="다음 구슬"></strong></div></div><div class="game-stage-viewport"><div class="game-stage"><div class="drop-guide" id="dropGuide" aria-hidden="true"></div><div class="drop-preview" id="dropPreview" aria-hidden="true"></div><div aria-label="유리구슬 게임판" class="game-board" id="gameBoard" tabindex="0"></div></div></div><div class="game-hint">게임 시작 후 마우스 또는 손가락을 좌우로 움직이고 놓으세요. 키보드 ← → / 스페이스도 지원합니다.</div><button class="btn ghost" onclick="endGame()" style="width:100%;margin-top:12px">게임 종료 · 점수 저장</button></div><div class="card"><div class="row"><h2>🏆 멸천문파 전용 랭킹</h2><button class="btn ghost" onclick="loadRanking()">새로고침</button></div><div class="muted" id="rankStatus" style="font-size:12px"></div><div class="list" id="rankingList" style="margin:12px 0"></div><button class="btn danger" onclick="openResetDialog()">🔒 랭킹 전체 초기화</button></div></section>
+<section class="section" id="game"><div class="card"><h2>🍡 멸천문파 유리구슬 합치기</h2><div class="formrow"><input id="gameNickname" maxlength="16" placeholder="문파원 닉네임"/><button class="btn primary" onclick="startGame()">게임 시작</button></div><p class="muted" style="font-size:12px">좌우로 이동해 놓을 위치를 정하고 떨어뜨리세요. 같은 구슬끼리 만나면 더 큰 경단으로 합쳐집니다.</p><div class="stats" style="margin:12px 0"><div class="stat"><label>현재 점수</label><strong id="gameScore">0</strong></div><div class="stat"><label>최고 점수</label><strong id="gameBest">0</strong></div><div class="stat"><label>다음 구슬</label><strong id="gameNext" class="next-ball" data-level="0" aria-label="다음 구슬"></strong></div></div><div class="game-stage-viewport"><div class="game-stage"><div class="drop-guide" id="dropGuide" aria-hidden="true"></div><div class="drop-preview" id="dropPreview" aria-hidden="true"></div><div aria-label="유리구슬 게임판" class="game-board" id="gameBoard" tabindex="0"></div></div></div><div class="game-hint">V40 · 모바일: 손가락으로 좌우로 끌고 뗄 때만 떨어집니다. 가볍게 터치만 하면 떨어지지 않습니다. 키보드 ← → / 스페이스도 지원합니다.</div><button class="btn ghost" onclick="endGame()" style="width:100%;margin-top:12px">게임 종료 · 점수 저장</button></div><div class="card"><div class="row"><h2>🏆 멸천문파 전용 랭킹</h2><button class="btn ghost" onclick="loadRanking()">새로고침</button></div><div class="muted" id="rankStatus" style="font-size:12px"></div><div class="list" id="rankingList" style="margin:12px 0"></div><button class="btn danger" onclick="openResetDialog()">🔒 랭킹 전체 초기화</button></div></section>
 
 
 
@@ -425,23 +425,35 @@ function dropAt(clientX){if(!gameActive)return;if(Date.now()-lastDrop<450)return
 function updatePreview(){const r=sizes[nextLevel],x=Math.max(r,Math.min(board.clientWidth-r,(Number.isFinite(aimX)?aimX:board.clientWidth/2)));preview.innerHTML='<span class="marble-letter">'+emojis[nextLevel]+'</span>';preview.dataset.level=String(nextLevel);preview.style.left=x+'px';guide.style.left=x+'px';preview.style.width=preview.style.height=(r*2)+'px';preview.style.fontSize=Math.round(r*.9)+'px';preview.style.opacity='1'}
 const stage=document.querySelector('.game-stage');
 function pointAt(e){const rect=board.getBoundingClientRect();aimX=Math.max(0,Math.min(board.clientWidth,(e.clientX-rect.left)*(board.clientWidth/rect.width)));updatePreview()}
-let activeDropPointer=null;
+// V40: mobile requires a deliberate drag, and ONLY drops after finger release.
+let activeDropPointer=null, dragStartX=0, dragStartY=0, dragStartTime=0, draggedEnough=false, activePointerType='';
 stage.addEventListener('pointerdown',e=>{
  if(!gameActive||activeDropPointer!==null)return;
- e.preventDefault();activeDropPointer=e.pointerId;pointAt(e);
+ if(e.pointerType==='mouse'&&e.button!==0)return;
+ e.preventDefault();
+ activeDropPointer=e.pointerId;activePointerType=e.pointerType;
+ dragStartX=e.clientX;dragStartY=e.clientY;dragStartTime=performance.now();draggedEnough=false;
+ pointAt(e);
  try{stage.setPointerCapture(e.pointerId)}catch(_){}
 });
 stage.addEventListener('pointermove',e=>{
- if(activeDropPointer===null){if(e.pointerType==='mouse')pointAt(e);return}
+ if(activeDropPointer===null){if(e.pointerType==='mouse')pointAt(e);return;}
  if(e.pointerId!==activeDropPointer)return;
  e.preventDefault();pointAt(e);
+ if(Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>=8)draggedEnough=true;
 });
 stage.addEventListener('pointerup',e=>{
  if(e.pointerId!==activeDropPointer)return;
- e.preventDefault();pointAt(e);activeDropPointer=null;
+ e.preventDefault();pointAt(e);
+ const isTouch=activePointerType==='touch'||activePointerType==='pen';
+ const moved=draggedEnough||Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>=8;
+ const held=performance.now()-dragStartTime>=160;
+ activeDropPointer=null;activePointerType='';draggedEnough=false;
+ // An accidental mobile tap never drops a ball. Drag and release is required.
+ if(isTouch&&(!moved||!held))return;
  if(gameActive)dropAt(board.getBoundingClientRect().left+aimX*(board.getBoundingClientRect().width/board.clientWidth));
 });
-stage.addEventListener('pointercancel',e=>{if(e.pointerId===activeDropPointer)activeDropPointer=null});
+stage.addEventListener('pointercancel',e=>{if(e.pointerId===activeDropPointer){activeDropPointer=null;activePointerType='';draggedEnough=false;}});
 
 board.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();aimX=Math.max(0,Math.min(board.clientWidth,((Number.isFinite(aimX)?aimX:board.clientWidth/2))+(e.key==='ArrowLeft'?-22:22)));updatePreview()}if(e.key===' '||e.key==='Enter'){e.preventDefault();dropAt(board.getBoundingClientRect().left+((Number.isFinite(aimX)?aimX:board.clientWidth/2))*(board.getBoundingClientRect().width/board.clientWidth))}});
 function fitStage(){const available=stage.parentElement.clientWidth;stage.style.zoom=String(Math.min(1,available/360));updatePreview()}
